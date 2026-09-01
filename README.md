@@ -35,21 +35,31 @@ vip-scalper-store/
 
 ## Cómo funciona el flujo de pago
 
-1. Comprador toca **"DESCARGAR BOT AHORA"** → `buy-modal.js` llama a
-   `POST /api/reserve`, que genera un monto único con 6 decimales (para poder
-   identificar el pago sin memo, ya que USDT-TRC20 no tiene) y una reserva
-   con 18 minutos para pagar.
-2. Se abre el modal con el QR + wallet + monto exacto, y arranca un polling
-   cada 6 segundos a `/api/status/[reservationId]`.
-3. Cada llamada de polling consulta TronGrid en vivo (últimas transferencias
-   USDT-TRC20 a tu wallet) buscando una que matchee el monto exacto. Si la
-   encuentra, marca la reserva como pagada y devuelve un token de descarga
-   firmado (vence en 1 hora).
-4. El modal muestra el botón de descarga, apuntando a
-   `/api/download/[token]`, que valida el token y redirige al archivo.
+1. Comprador toca **"DESCARGAR BOT AHORA"** → se abre el modal con los
+   **términos y condiciones** (checkbox, no se puede avanzar sin tildarlo).
+2. Pide un **email/contacto** — se guarda junto con la reserva, para el panel
+   y por si hay que reenviar el archivo a mano.
+3. `buy-modal.js` llama a `POST /api/reserve`, que genera un monto único con
+   6 decimales (para identificar el pago sin memo, ya que USDT-TRC20 no
+   tiene) y una reserva con 18 minutos para pagar.
+4. Se muestra el QR (solo la dirección — el monto se copia aparte) + timer +
+   botón **"✅ Ya pagué"** + link de ayuda por mail.
+5. En paralelo, arranca un polling cada 6 segundos a
+   `/api/status/[reservationId]`, que consulta TronGrid en vivo. Si detecta
+   el pago exacto, libera la descarga solo — no hace falta que el comprador
+   toque nada.
+6. Si el comprador toca "Ya pagué", eso NO libera nada por sí solo — solo
+   avisa (`/api/mark-paid`) para que el panel lo priorice, y pasa a una
+   pantalla de "esperando confirmación". El polling sigue corriendo en
+   segundo plano igual, así que si la detección automática confirma el pago
+   mientras espera, la pantalla cambia sola al botón de descarga.
+7. Si por lo que sea la detección automática no lo agarra (rate limit,
+   demora de TronGrid, etc.), vos podés **confirmarlo a mano desde el
+   panel** — mismo resultado, libera la descarga.
 
-No hay paso manual en ningún punto — no hay botón "ya pagué" que revisar vos,
-no hace falta cron.
+No hay memo en USDT-TRC20, así que el monto único con decimales es lo único
+que identifica cada compra — por eso es importante que el comprador mande el
+monto exacto.
 
 ---
 
@@ -128,10 +138,18 @@ En Vercel → tu proyecto → **Settings → Environment Variables**, cargá est
 
 Entrá a `tu-proyecto.vercel.app/admin`, pegá tu `ADMIN_TOKEN`, y vas a ver:
 
-- **Visitas** — se cuentan solas cada vez que alguien carga la landing.
-- **Ventas** e **Ingresos** — se suman solos cada vez que se confirma un pago.
-- **Precio** — editable ahí mismo. Al guardar, todas las compras nuevas usan
-  el precio nuevo al instante, sin redeploy.
+- **Visitas, ventas, ingresos, conversión** — se calculan solos.
+- **Precio** — editable ahí mismo, sin redeploy.
+- **Pagos pendientes** — cada reserva activa, con su monto, su contacto, y si
+  el comprador ya avisó "ya pagué" (se destacan primero, con la hora en que
+  avisaron). Tiene un botón **"Confirmar manualmente"** para los casos en
+  que la detección automática no llegó a tiempo — vos revisás la wallet a
+  ojo, y si el monto coincide, confirmás ahí mismo.
+- **Historial de compras** — todas las ventas confirmadas, con fecha, monto,
+  el contacto que dejó el comprador, y si se confirmó automático o a mano.
+  Usás el contacto de acá para reenviar el archivo por mail si el comprador
+  te escribe pidiendo el link de nuevo (por ahora es un envío manual tuyo,
+  no automatizado).
 
 ## Notas importantes
 
