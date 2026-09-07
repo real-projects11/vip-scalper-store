@@ -150,29 +150,35 @@
   // Paso 0: detalle del producto
   // ---------------------------------------------------------------------
 
+  // Muestra la landing rica del producto (galería, badges, beneficios, etc.)
+  // dentro de un <iframe>, reemplazando la lista de productos en el mismo
+  // contenedor. La plantilla vive en /product-landing.js (compartida con el
+  // preview del panel de admin) para que ambas vistas sean siempre idénticas.
   function openProductDetail(product) {
     selectedProduct = product;
-    const overlay = ensureOverlay();
-    const benefitsHtml = (product.benefits || []).map((b) => `<li style="margin-bottom:6px;">✓ ${esc(b)}</li>`).join('');
-    const reqHtml = (product.requirements || []).map((r) => `<li style="margin-bottom:4px;">${esc(r)}</li>`).join('');
-    const chipsHtml = (product.chips || []).map((c) => `<span style="display:inline-block;border:1px solid #333;border-radius:20px;padding:4px 10px;font-size:10.5px;color:#ccc;margin:0 6px 6px 0;">${esc(c)}</span>`).join('');
-
-    overlay.innerHTML = sheet(`
-      ${product.images && product.images[0] ? `<img src="${esc(product.images[0])}" style="width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:14px;">` : ''}
-      <div style="text-align:left;">
-        <div style="font-size:17px;font-weight:800;margin-bottom:6px;">${esc(product.name)}</div>
-        <div style="margin-bottom:10px;">${chipsHtml}</div>
-        ${benefitsHtml ? `<ul style="list-style:none;font-size:12.5px;color:#ddd;line-height:1.5;margin-bottom:12px;">${benefitsHtml}</ul>` : ''}
-        ${product.description ? `<p style="font-size:12px;color:#aaa;line-height:1.6;margin-bottom:12px;">${esc(product.description)}</p>` : ''}
-        ${reqHtml ? `<div style="font-size:10.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Requisitos</div><ul style="list-style:none;font-size:11.5px;color:#999;line-height:1.5;margin-bottom:16px;">${reqHtml}</ul>` : ''}
-      </div>
-      <button id="buy-now-btn" style="width:100%;padding:14px;border-radius:12px;border:none;background:#e0b04d;color:#111;font-weight:800;font-size:14px;cursor:pointer;">
-        Comprar · $${product.price}
-      </button>
-    `);
-    bindClose();
-    document.getElementById('buy-now-btn').addEventListener('click', openTermsStep);
+    const area = document.getElementById('scroll-area');
+    area.classList.add('no-scroll');
+    area.innerHTML = `
+      <button class="back-to-list-btn" id="back-to-list-btn">← Volver</button>
+      <iframe class="product-landing-frame" id="product-landing-frame" title="${esc(product.name)}"></iframe>
+    `;
+    const iframe = document.getElementById('product-landing-frame');
+    if (typeof window.buildProductLandingHTML === 'function') {
+      iframe.srcdoc = window.buildProductLandingHTML(product, { mode: 'live' });
+    }
+    document.getElementById('back-to-list-btn').addEventListener('click', () => {
+      area.classList.remove('no-scroll');
+      renderProductList();
+    });
   }
+
+  // El botón "Comprar ahora" vive DENTRO del iframe de la landing, así que
+  // nos avisa por postMessage en vez de un click handler directo.
+  window.addEventListener('message', (event) => {
+    if (event && event.data && event.data.type === 'vip-store:buy' && selectedProduct) {
+      openTermsStep();
+    }
+  });
 
   // ---------------------------------------------------------------------
   // Paso 1: términos y condiciones
@@ -455,6 +461,8 @@
     document.getElementById('menu-home').addEventListener('click', (e) => {
       e.preventDefault();
       closeMenu();
+      document.getElementById('scroll-area').classList.remove('no-scroll');
+      renderProductList();
     });
   });
 })();
