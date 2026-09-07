@@ -3,11 +3,10 @@ import { useEffect, useState } from 'react';
 export default function Admin() {
   const [token, setToken] = useState('');
   const [stats, setStats] = useState(null);
-  const [priceInput, setPriceInput] = useState('');
+  const [products, setProducts] = useState([]);
   const [pending, setPending] = useState([]);
   const [sales, setSales] = useState([]);
   const [msg, setMsg] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
@@ -23,18 +22,14 @@ export default function Admin() {
 
   async function load() {
     try {
-      const [statsRes, pendingRes, salesRes] = await Promise.all([
+      const [statsRes, productsRes, pendingRes, salesRes] = await Promise.all([
         fetch('/api/admin/stats', { headers: { 'x-admin-token': token } }),
+        fetch('/api/admin/products', { headers: { 'x-admin-token': token } }),
         fetch('/api/admin/pending', { headers: { 'x-admin-token': token } }),
         fetch('/api/admin/sales', { headers: { 'x-admin-token': token } }),
       ]);
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setStats(data);
-        setPriceInput(String(data.price));
-      } else {
-        setStats(null);
-      }
+      setStats(statsRes.ok ? await statsRes.json() : null);
+      if (productsRes.ok) setProducts((await productsRes.json()).products || []);
       if (pendingRes.ok) setPending((await pendingRes.json()).pending || []);
       if (salesRes.ok) setSales((await salesRes.json()).sales || []);
     } catch (e) {
@@ -47,35 +42,26 @@ export default function Admin() {
     localStorage.setItem('admin_token', v);
   }
 
-  async function savePrice() {
-    setSaving(true);
+  async function createProduct() {
     setMsg(null);
     try {
-      const res = await fetch('/api/admin/set-price', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-        body: JSON.stringify({ price: Number(priceInput) }),
-      });
+      const res = await fetch('/api/admin/products', { method: 'POST', headers: { 'x-admin-token': token } });
       const data = await res.json();
-      if (!res.ok) { setMsg({ ok: false, text: data.error }); }
-      else { setMsg({ ok: true, text: `Precio actualizado a $${data.price}` }); load(); }
+      if (!res.ok) { setMsg({ ok: false, text: data.error }); return; }
+      setMsg({ ok: true, text: 'Producto nuevo creado — quedó en borrador, no se muestra hasta que lo actives.' });
+      load();
     } catch (e) {
       setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
     }
-    setSaving(false);
   }
 
   async function confirmManual(reservationId) {
     if (!window.confirm('¿Confirmás que viste este pago llegar a la wallet? Esto libera la descarga.')) return;
     setBusyId(reservationId);
     try {
-      const res = await fetch(`/api/admin/confirm/${reservationId}`, {
-        method: 'POST',
-        headers: { 'x-admin-token': token },
-      });
+      const res = await fetch(`/api/admin/confirm/${reservationId}`, { method: 'POST', headers: { 'x-admin-token': token } });
       const data = await res.json();
-      if (!res.ok) setMsg({ ok: false, text: data.error });
-      else setMsg({ ok: true, text: 'Pago confirmado — descarga liberada.' });
+      setMsg(res.ok ? { ok: true, text: 'Pago confirmado — descarga liberada.' } : { ok: false, text: data.error });
     } catch (e) {
       setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
     }
@@ -89,8 +75,8 @@ export default function Admin() {
   }
 
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 20px 60px', fontFamily: '-apple-system, Inter, sans-serif', color: '#111' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 24 }}>Panel — VIP Scalper</h1>
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 20px 60px', fontFamily: '-apple-system, Inter, sans-serif', color: '#111' }}>
+      <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 24 }}>Panel</h1>
 
       <label style={{ fontSize: 12, fontWeight: 700, color: '#666', display: 'block', marginBottom: 8 }}>ADMIN TOKEN</label>
       <input
@@ -112,24 +98,21 @@ export default function Admin() {
             <StatBox label="Conversión" value={stats.visits ? `${((stats.sales / stats.visits) * 100).toFixed(1)}%` : '—'} />
           </div>
 
-          <label style={{ fontSize: 12, fontWeight: 700, color: '#666', display: 'block', marginBottom: 8 }}>PRECIO (USDT)</label>
-          <div style={{ display: 'flex', gap: 8, marginBottom: msg ? 10 : 32 }}>
-            <input
-              type="number"
-              step="0.01"
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value)}
-              style={{ flex: 1, padding: 12, borderRadius: 10, border: '1.5px solid #ddd', boxSizing: 'border-box' }}
-            />
-            <button
-              onClick={savePrice}
-              disabled={saving}
-              style={{ padding: '0 18px', borderRadius: 10, border: 'none', background: '#111', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
-            >
-              Guardar
+          {msg && (
+            <p style={{ fontSize: 12.5, marginBottom: 20, color: msg.ok ? '#146B52' : '#B34A25' }}>{msg.text}</p>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '28px 0 12px' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>Productos ({products.length})</h2>
+            <button onClick={createProduct} style={{ padding: '8px 14px', borderRadius: 100, border: 'none', background: '#111', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+              + Nuevo producto
             </button>
           </div>
-          {msg && <p style={{ fontSize: 12.5, marginBottom: 24, color: msg.ok ? '#146B52' : '#B34A25' }}>{msg.text}</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} token={token} onSaved={load} />
+            ))}
+          </div>
 
           <h2 style={{ fontSize: 15, fontWeight: 800, margin: '28px 0 12px' }}>
             Pagos pendientes {pending.length > 0 && `(${pending.length})`}
@@ -143,13 +126,10 @@ export default function Admin() {
                     ✋ El comprador avisó "ya pagué" — {fmtDate(p.buyerConfirmedAt)}
                   </div>
                 )}
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#666' }}>{p.productName}</div>
                 <div style={{ fontFamily: 'monospace', fontSize: 17, fontWeight: 700 }}>${p.amount.toFixed(6)} USDT</div>
-                <div style={{ fontSize: 12.5, color: '#666', marginTop: 4 }}>
-                  Contacto: {p.contact || '— no dejó contacto —'}
-                </div>
-                <div style={{ fontSize: 11.5, color: '#999', marginTop: 2 }}>
-                  Reservado: {fmtDate(p.createdAt)}
-                </div>
+                <div style={{ fontSize: 12.5, color: '#666', marginTop: 4 }}>Contacto: {p.contact || '— no dejó contacto —'}</div>
+                <div style={{ fontSize: 11.5, color: '#999', marginTop: 2 }}>Reservado: {fmtDate(p.createdAt)}</div>
                 <button
                   onClick={() => confirmManual(p.reservationId)}
                   disabled={busyId === p.reservationId}
@@ -167,7 +147,7 @@ export default function Admin() {
             {sales.map((s) => (
               <div key={s.reservationId} style={{ border: '1.5px solid #eee', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>${s.price.toFixed(2)}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{s.productName} — ${s.price.toFixed(2)}</div>
                   <div style={{ fontSize: 11.5, color: '#888' }}>{s.contact || '— sin contacto —'}</div>
                 </div>
                 <div style={{ textAlign: 'right', fontSize: 11.5, color: '#999' }}>
@@ -188,6 +168,126 @@ function StatBox({ label, value }) {
     <div style={{ border: '1.5px solid #eee', borderRadius: 12, padding: '14px 16px' }}>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 800 }}>{value}</div>
+    </div>
+  );
+}
+
+function ProductCard({ product, token, onSaved }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(() => toFormState(product));
+
+  function toFormState(p) {
+    return {
+      name: p.name,
+      shortDesc: p.shortDesc,
+      price: String(p.price),
+      images: p.images.join('\n'),
+      description: p.description,
+      benefits: p.benefits.join('\n'),
+      requirements: p.requirements.join('\n'),
+      chips: p.chips.join(', '),
+      fileUrl: p.fileUrl,
+    };
+  }
+
+  function set(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  async function save(extra = {}) {
+    setSaving(true);
+    const body = {
+      name: form.name,
+      shortDesc: form.shortDesc,
+      price: Number(form.price) || 0,
+      images: form.images.split('\n').map((s) => s.trim()).filter(Boolean),
+      description: form.description,
+      benefits: form.benefits.split('\n').map((s) => s.trim()).filter(Boolean),
+      requirements: form.requirements.split('\n').map((s) => s.trim()).filter(Boolean),
+      chips: form.chips.split(',').map((s) => s.trim()).filter(Boolean),
+      fileUrl: form.fileUrl,
+      ...extra,
+    };
+    try {
+      await fetch(`/api/admin/products/${product.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify(body),
+      });
+      onSaved();
+    } catch (e) {
+      // silencioso — el usuario ve que no cambió nada si falla
+    }
+    setSaving(false);
+  }
+
+  const inputStyle = { width: '100%', padding: 10, borderRadius: 8, border: '1.5px solid #ddd', fontSize: 13, boxSizing: 'border-box', marginBottom: 10 };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '.03em', display: 'block', marginBottom: 4 };
+
+  return (
+    <div style={{ border: `1.5px solid ${product.active ? '#12664F' : '#E2E4DE'}`, borderRadius: 14, padding: '14px 16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>{product.name}</div>
+          <div style={{ fontSize: 12, color: '#888' }}>
+            ${product.price} · {product.sold} vendidos · {product.active ? <span style={{ color: '#146B52' }}>Activo</span> : <span style={{ color: '#999' }}>Borrador</span>}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={() => save({ active: !product.active })}
+            style={{ padding: '7px 12px', borderRadius: 100, border: '1.5px solid #ddd', background: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }}
+          >
+            {product.active ? 'Desactivar' : 'Activar'}
+          </button>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            style={{ padding: '7px 12px', borderRadius: 100, border: 'none', background: '#111', color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }}
+          >
+            {open ? 'Cerrar' : 'Editar'}
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee' }}>
+          <label style={labelStyle}>Nombre</label>
+          <input style={inputStyle} value={form.name} onChange={(e) => set('name', e.target.value)} />
+
+          <label style={labelStyle}>Descripción corta (para la card del home)</label>
+          <input style={inputStyle} value={form.shortDesc} onChange={(e) => set('shortDesc', e.target.value)} />
+
+          <label style={labelStyle}>Precio (USDT)</label>
+          <input style={inputStyle} type="number" step="0.01" value={form.price} onChange={(e) => set('price', e.target.value)} />
+
+          <label style={labelStyle}>Imágenes (una URL por línea)</label>
+          <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.images} onChange={(e) => set('images', e.target.value)} />
+
+          <label style={labelStyle}>Descripción larga</label>
+          <textarea style={{ ...inputStyle, minHeight: 90 }} value={form.description} onChange={(e) => set('description', e.target.value)} />
+
+          <label style={labelStyle}>Beneficios / checks (uno por línea)</label>
+          <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.benefits} onChange={(e) => set('benefits', e.target.value)} />
+
+          <label style={labelStyle}>Requisitos (uno por línea)</label>
+          <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.requirements} onChange={(e) => set('requirements', e.target.value)} />
+
+          <label style={labelStyle}>Chips/etiquetas (separadas por coma)</label>
+          <input style={inputStyle} value={form.chips} onChange={(e) => set('chips', e.target.value)} />
+
+          <label style={labelStyle}>Link de descarga (Drive/Dropbox, con descarga directa)</label>
+          <input style={inputStyle} value={form.fileUrl} onChange={(e) => set('fileUrl', e.target.value)} />
+
+          <button
+            onClick={() => save()}
+            disabled={saving}
+            style={{ width: '100%', padding: 12, borderRadius: 10, border: 'none', background: '#12664F', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', marginTop: 4 }}
+          >
+            {saving ? 'Guardando...' : 'Guardar cambios'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

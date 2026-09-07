@@ -1,4 +1,4 @@
-import { verifyDownloadToken } from '../../../lib/purchase';
+import { verifyDownloadToken, getFileUrlForReservation } from '../../../lib/purchase';
 
 export default async function handler(req, res) {
   const { token } = req.query;
@@ -9,10 +9,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  // FILE_URL tiene que ser el link de DESCARGA DIRECTA del archivo.
-  // - Google Drive: https://drive.google.com/uc?export=download&id=TU_FILE_ID
-  // - Dropbox: el link de compartir, pero terminando en ?dl=1 (no ?dl=0)
-  const fileUrl = process.env.FILE_URL;
+  const fileUrl = await getFileUrlForReservation(reservationId);
+  if (!fileUrl) {
+    res.status(404).send('No se encontró el archivo para esta compra. Escribinos y lo resolvemos.');
+    return;
+  }
+
   res.writeHead(302, { Location: fileUrl });
   res.end();
 }
