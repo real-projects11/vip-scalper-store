@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advance Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%; font-family: 'Inter', sans-serif; background: #e8e8e8;
+    display: flex; justify-content: center; align-items: center;
+  }
+
+  .phone {
+    width: 375px; height: 780px; background: #fff; border-radius: 50px;
+    overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; position: relative;
+  }
+
+  .banner {
+    background: #f7f7f7; border-bottom: 1px solid #e8e8e8; display: flex;
+    align-items: center; padding: 5px 18px; flex-shrink: 0; gap: 0; justify-content: center;
+  }
+  .banner-content { display: flex; align-items: center; gap: 7px; }
+  .banner-content svg { width: 17px; height: 17px; stroke: #111; fill: none; stroke-width: 1.6; }
+  .banner-content span { font-size: 11px; font-weight: 500; color: #111; letter-spacing: -0.01em; }
+
+  .navbar {
+    background: #fff; display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px; border-bottom: 1px solid #ebebeb; flex-shrink: 0;
+  }
+  .ham { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; margin: -6px; }
+  .ham span { display: block; width: 22px; height: 2px; background: #111; border-radius: 2px; transition: transform .2s, opacity .2s; }
+  .logo { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: #111; }
+  .logo sup { font-size: 9px; font-weight: 600; vertical-align: super; letter-spacing: 0; }
+  .nav-right { display: flex; gap: 12px; }
+  .nav-ico svg { width: 22px; height: 22px; stroke: #111; fill: none; stroke-width: 1.6; cursor: pointer; }
+
+  .scroll-area { flex: 1; overflow-y: auto; background: #fafafa; padding: 16px 16px 40px; scrollbar-width: none; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+  /* Cuando se muestra la landing de un producto (iframe) en vez de la lista */
+  .scroll-area.no-scroll { overflow: hidden; padding: 0; background: #fff; display: flex; flex-direction: column; }
+  .back-to-list-btn {
+    align-self: flex-start; margin: 10px 14px 0; padding: 7px 14px; border-radius: 100px;
+    border: 1.5px solid #ddd; background: #fff; font-family: 'Inter', sans-serif;
+    font-size: 11.5px; font-weight: 700; color: #111; cursor: pointer; flex-shrink: 0;
+  }
+  .product-landing-frame { flex: 1; width: 100%; border: 0; }
+
+  .empty-msg { text-align: center; color: #999; font-size: 13px; margin-top: 60px; }
+
+  .p-card {
+    background: #fff; border: 1.5px solid #eee; border-radius: 16px; overflow: hidden;
+    margin-bottom: 14px; cursor: pointer; transition: border-color .15s;
+  }
+  .p-card:active { border-color: #ccc; }
+  .p-card img { width: 100%; height: 160px; object-fit: cover; display: block; background: #111; }
+  .p-card-body { padding: 12px 14px 14px; }
+  .p-card-name { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .p-card-desc { font-size: 12px; color: #888; margin-bottom: 8px; line-height: 1.4; }
+  .p-card-row { display: flex; justify-content: space-between; align-items: center; }
+  .p-card-price { font-size: 15px; font-weight: 800; }
+  .p-card-sold { font-size: 10.5px; color: #aaa; }
+  .p-card-btn { background: #111; color: #fff; border: none; border-radius: 100px; padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Menú hamburguesa */
+  .side-menu-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 50;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .side-menu-overlay.open { opacity: 1; pointer-events: auto; }
+  .side-menu {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 78%; max-width: 280px;
+    background: #fff; z-index: 51; transform: translateX(-100%); transition: transform .25s ease;
+    padding: 24px 20px; overflow-y: auto;
+  }
+  .side-menu.open { transform: translateX(0); }
+  .side-menu-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 24px; }
+  .side-menu a, .side-menu .menu-item {
+    display: block; padding: 12px 0; font-size: 14px; font-weight: 600; color: #111;
+    text-decoration: none; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+  }
+  .side-menu .menu-section-title {
+    font-size: 10.5px; font-weight: 700; color: #999; text-transform: uppercase;
+    letter-spacing: .05em; margin: 18px 0 6px;
+  }
+
+  @media (max-width: 420px) {
+    body { background: #fff; align-items: flex-start; }
+    .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="banner">
+    <div class="banner-content">
+      <svg viewBox="0 0 24 16"><rect x="1" y="1" width="22" height="12" rx="2"/><path d="M1 5h7M1 9h5"/><circle cx="19" cy="9" r="2"/></svg>
+      <span>Descarga Inmediata</span>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="ham" id="ham-btn"><span></span><span></span><span></span></div>
+    <div class="logo">ADVANCE<sup>®</sup></div>
+    <div class="nav-right">
+      <div class="nav-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    </div>
+  </nav>
+
+  <div class="scroll-area" id="scroll-area">
+    <div class="empty-msg" id="loading-msg">Cargando productos...</div>
+  </div>
+
+  <div class="side-menu-overlay" id="menu-overlay"></div>
+  <div class="side-menu" id="side-menu">
+    <div class="side-menu-logo">ADVANCE<sup style="font-size:9px;">®</sup></div>
+    <a href="#" id="menu-home">Inicio</a>
+    <div class="menu-section-title">Productos</div>
+    <div id="menu-products"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/product-landing.js"></script>
+<script src="/store.js"></script>
+</body>
+</html>
