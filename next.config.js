@@ -4,7 +4,7 @@ module.exports = {
     return [
       // Cuando alguien entra a la raíz del dominio, le mostramos el contenido
       // de public/vip-scalper-conectado.html sin cambiarle la URL en la barra.
-      { source: '/', destination: '/index.html' },
+      { source: '/', destination: '/vip-scalper-conectado.html' },
     ];
   },
 };
