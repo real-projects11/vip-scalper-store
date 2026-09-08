@@ -293,6 +293,28 @@ function ToggleSwitch({ checked, onChange, disabled }) {
   );
 }
 
+const ICON_OPTIONS = ['box', 'grid', 'square', 'target', 'check', 'shield', 'bolt', 'clock'];
+
+// Chips/badges se editan como texto, una línea por ítem: "icono|texto".
+// Ej: "box|Archivo MQ5". Si no se pone "icono|", usa "box" por defecto.
+function itemsToText(items) {
+  return (items || []).map((it) => `${ICON_OPTIONS.includes(it.icon) ? it.icon : 'box'}|${it.label}`).join('\n');
+}
+function textToItems(text) {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [maybeIcon, ...rest] = line.split('|');
+      if (rest.length && ICON_OPTIONS.includes(maybeIcon.trim())) {
+        return { icon: maybeIcon.trim(), label: rest.join('|').trim() };
+      }
+      return { icon: 'box', label: line };
+    })
+    .filter((it) => it.label);
+}
+
 function ProductCard({ product, token, onSaved, landingReady }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -310,8 +332,17 @@ function ProductCard({ product, token, onSaved, landingReady }) {
       description: p.description,
       benefits: p.benefits.join('\n'),
       requirements: p.requirements.join('\n'),
-      chips: p.chips.join(', '),
+      detailsList: (p.detailsList || []).join('\n'),
+      chips: itemsToText(p.chips),
+      badges: itemsToText(p.badges),
       fileUrl: p.fileUrl,
+      brandName: p.brandName || '',
+      bannerText: p.bannerText || '',
+      stars: String(p.stars ?? 5),
+      bestseller: !!p.bestseller,
+      bestsellerText: p.bestsellerText || '',
+      ctaText: p.ctaText || '',
+      guaranteeText: p.guaranteeText || '',
     };
   }
 
@@ -328,8 +359,17 @@ function ProductCard({ product, token, onSaved, landingReady }) {
       description: form.description,
       benefits: form.benefits.split('\n').map((s) => s.trim()).filter(Boolean),
       requirements: form.requirements.split('\n').map((s) => s.trim()).filter(Boolean),
-      chips: form.chips.split(',').map((s) => s.trim()).filter(Boolean),
+      detailsList: form.detailsList.split('\n').map((s) => s.trim()).filter(Boolean),
+      chips: textToItems(form.chips),
+      badges: textToItems(form.badges),
       fileUrl: form.fileUrl,
+      brandName: form.brandName,
+      bannerText: form.bannerText,
+      stars: Number(form.stars) || 0,
+      bestseller: !!form.bestseller,
+      bestsellerText: form.bestsellerText,
+      ctaText: form.ctaText,
+      guaranteeText: form.guaranteeText,
     };
   }
 
@@ -422,11 +462,20 @@ function ProductCard({ product, token, onSaved, landingReady }) {
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee', display: 'flex', flexWrap: 'wrap', gap: 24 }}>
           {/* --- Formulario --- */}
           <div style={{ flex: '1 1 280px', minWidth: 260 }}>
+            <label style={labelStyle}>Marca / navbar (logo de arriba)</label>
+            <input style={inputStyle} value={form.brandName} onChange={(e) => set('brandName', e.target.value)} placeholder="VIP SCALPER®" />
+
+            <label style={labelStyle}>Texto del banner superior</label>
+            <input style={inputStyle} value={form.bannerText} onChange={(e) => set('bannerText', e.target.value)} placeholder="Descarga Inmediata del Bot" />
+
             <label style={labelStyle}>Nombre</label>
             <input style={inputStyle} value={form.name} onChange={(e) => set('name', e.target.value)} />
 
-            <label style={labelStyle}>Descripción corta (para la card del home)</label>
-            <input style={inputStyle} value={form.shortDesc} onChange={(e) => set('shortDesc', e.target.value)} />
+            <label style={labelStyle}>Texto de reseña (junto a las estrellas)</label>
+            <input style={inputStyle} value={form.shortDesc} onChange={(e) => set('shortDesc', e.target.value)} placeholder="Compatible con MetaTrader 5" />
+
+            <label style={labelStyle}>Estrellas (0 a 5)</label>
+            <input style={inputStyle} type="number" min="0" max="5" value={form.stars} onChange={(e) => set('stars', e.target.value)} />
 
             <label style={labelStyle}>Precio (USDT)</label>
             <input style={inputStyle} type="number" step="0.01" value={form.price} onChange={(e) => set('price', e.target.value)} />
@@ -434,8 +483,32 @@ function ProductCard({ product, token, onSaved, landingReady }) {
             <label style={labelStyle}>Imágenes (una URL por línea)</label>
             <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.images} onChange={(e) => set('images', e.target.value)} />
 
-            <label style={labelStyle}>Descripción larga</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <ToggleSwitch checked={form.bestseller} onChange={(v) => set('bestseller', v)} />
+              <span style={{ fontSize: 12.5, fontWeight: 600 }}>Marcar como "más vendido"</span>
+            </div>
+            {form.bestseller && (
+              <>
+                <label style={labelStyle}>Texto del sello "más vendido"</label>
+                <input style={inputStyle} value={form.bestsellerText} onChange={(e) => set('bestsellerText', e.target.value)} placeholder="🔥 Bot Más Vendido" />
+              </>
+            )}
+
+            <label style={labelStyle}>
+              Chips debajo del título — uno por línea, formato <code>icono|texto</code> ({ICON_OPTIONS.join(', ')})
+            </label>
+            <textarea style={{ ...inputStyle, minHeight: 60 }} value={form.chips} onChange={(e) => set('chips', e.target.value)} placeholder="box|Archivo MQ5" />
+
+            <label style={labelStyle}>
+              Badges con ícono (columna lateral + barra inferior) — uno por línea, formato <code>icono|texto</code>
+            </label>
+            <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.badges} onChange={(e) => set('badges', e.target.value)} placeholder="grid|Grid Automático" />
+
+            <label style={labelStyle}>Descripción larga (párrafos)</label>
             <textarea style={{ ...inputStyle, minHeight: 90 }} value={form.description} onChange={(e) => set('description', e.target.value)} />
+
+            <label style={labelStyle}>Lista de detalles (incluye / parámetros — uno por línea)</label>
+            <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.detailsList} onChange={(e) => set('detailsList', e.target.value)} />
 
             <label style={labelStyle}>Beneficios / checks (uno por línea)</label>
             <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.benefits} onChange={(e) => set('benefits', e.target.value)} />
@@ -443,8 +516,11 @@ function ProductCard({ product, token, onSaved, landingReady }) {
             <label style={labelStyle}>Requisitos (uno por línea)</label>
             <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.requirements} onChange={(e) => set('requirements', e.target.value)} />
 
-            <label style={labelStyle}>Chips/etiquetas (separadas por coma)</label>
-            <input style={inputStyle} value={form.chips} onChange={(e) => set('chips', e.target.value)} />
+            <label style={labelStyle}>Texto del botón de compra</label>
+            <input style={inputStyle} value={form.ctaText} onChange={(e) => set('ctaText', e.target.value)} placeholder="Descargar bot ahora" />
+
+            <label style={labelStyle}>Texto de garantía (debajo del botón)</label>
+            <input style={inputStyle} value={form.guaranteeText} onChange={(e) => set('guaranteeText', e.target.value)} placeholder="Acceso inmediato al archivo .mq5" />
 
             <label style={labelStyle}>Link de descarga (Drive/Dropbox, con descarga directa)</label>
             <input style={inputStyle} value={form.fileUrl} onChange={(e) => set('fileUrl', e.target.value)} />
