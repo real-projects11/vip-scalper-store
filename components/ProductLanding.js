@@ -394,7 +394,7 @@ export default function ProductLanding({ content, editable = false, onChange, mo
           <button
             id={editable ? undefined : 'atc-btn'}
             className="atc-btn"
-            disabled={editable || mode === 'preview'}
+            disabled={!editable && mode === 'preview'}
             onClick={() => editable && setBtnPopoverOpen((o) => !o)}
           >
             {c.buttonText}
