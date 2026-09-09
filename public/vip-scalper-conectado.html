@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP Scalper – Bot de Trading Automatizado MQ5</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%; font-family: 'Inter', sans-serif; background: #e8e8e8;
+    display: flex; justify-content: center; align-items: center;
+  }
+
+  .phone {
+    width: 375px; height: 780px; background: #fff; border-radius: 50px;
+    overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; position: relative;
+  }
+
+  .banner {
+    background: #f7f7f7; border-bottom: 1px solid #e8e8e8; display: flex;
+    align-items: center; padding: 5px 18px; flex-shrink: 0; gap: 0;
+  }
+  .banner-arrow { font-size: 14px; color: #bbb; cursor: pointer; width: 20px; }
+  .banner-content { display: flex; align-items: center; gap: 7px; flex: 1; justify-content: center; }
+  .banner-content svg { width: 17px; height: 17px; stroke: #111; fill: none; stroke-width: 1.6; }
+  .banner-content span { font-size: 11px; font-weight: 500; color: #111; letter-spacing: -0.01em; }
+
+  .navbar {
+    background: #fff; display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px; border-bottom: 1px solid #ebebeb; flex-shrink: 0;
+  }
+  .ham { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+  .ham span { display: block; width: 22px; height: 2px; background: #111; border-radius: 2px; }
+  .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: #111; }
+  .logo sup { font-size: 9px; font-weight: 600; vertical-align: super; letter-spacing: 0; }
+  .nav-right { display: flex; gap: 12px; }
+  .nav-ico svg { width: 22px; height: 22px; stroke: #111; fill: none; stroke-width: 1.6; cursor: pointer; }
+
+  /* Padding final súper ajustado para evitar espacios vacíos */
+  .scroll-area {
+    flex: 1; overflow-y: auto; background: #fff; padding-bottom: 90px;
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  .gallery { display: flex; gap: 9px; padding: 12px 14px 0; align-items: flex-start; }
+  .main-img {
+    flex: 1; background: #000; border-radius: 14px; border: 1.5px solid #ddd;
+    position: relative; height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .bestseller {
+    position: absolute; top: 10px; left: 10px; background: #fff; border-radius: 20px;
+    padding: 5px 11px 5px 8px; font-size: 11px; font-weight: 700; display: flex;
+    align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 2;
+  }
+  .main-img .product-img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.5s ease;
+  }
+  .main-img .product-img.active { opacity: 1; }
+
+  .badges { display: flex; flex-direction: column; gap: 8px; width: 82px; flex-shrink: 0; height: 300px; justify-content: space-between; }
+  .badge { background: #1c1c1c; border-radius: 12px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; }
+  .badge svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 1.5; }
+  .badge span { color: #fff; font-size: 9px; font-weight: 500; text-align: center; line-height: 1.3; }
+
+  /* 4 Dots de navegación del carrusel */
+  .dots { display: flex; justify-content: center; gap: 6px; padding: 8px 14px 6px; margin-right: 105px; }
+  .dot { width: 6.5px; height: 6.5px; border-radius: 50%; background: #ccc; transition: background 0.3s ease; }
+  .dot.active { background: #111; }
+
+  .info { padding: 4px 20px 0; }
+  .rating-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .stars { display: flex; gap: 4px; }
+  .star { width: 13px; height: 13px; fill: #FFC107; stroke: #FFC107; stroke-width: 1.4; }
+  .rev { font-size: 11px; color: #999; font-weight: 400; }
+
+  .ptitle { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #111; line-height: 1.1; margin-bottom: 12px; }
+  
+  .chips { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+  .chip { display: flex; align-items: center; gap: 5px; border: 1px solid #d8d8d8; border-radius: 24px; padding: 5px 12px; font-size: 11px; color: #111; }
+  .chip svg { width: 11px; height: 11px; stroke: #111; fill: none; stroke-width: 1.5; }
+  .kcal-box { font-size: 7px; font-weight: 700; border: 1.5px solid #111; padding: 1px 3px; border-radius: 3px; flex-shrink: 0; }
+
+  .benefits { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .ben { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #111; }
+  .chk { width: 15px; height: 15px; background: #111; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .chk svg { width: 7px; height: 7px; stroke: #fff; fill: none; stroke-width: 2.5; }
+
+  .desc-box { padding: 0 20px 10px; font-size: 12px; color: #333; line-height: 1.6; }
+  .desc-box p { margin-bottom: 12px; }
+  .desc-box ul { margin-bottom: 16px; padding: 0; list-style: none; }
+  .desc-box li { margin-bottom: 6px; }
+  
+  .alert-box { background: #fdf5d3; color: #735a00; padding: 10px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 500; margin-top: 14px; margin-bottom: 0; text-align: center; }
+
+  .bottom-badges-wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 20px 0 5px; padding: 0 5px;
+  }
+  .b-badge {
+    width: 76px; height: 76px; border: 1px solid #d8d8d8; border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    background: transparent;
+  }
+  .b-badge svg { width: 24px; height: 24px; stroke: #111; fill: none; stroke-width: 1.5; }
+  .b-badge span { font-size: 9px; font-weight: 600; color: #111; text-align: center; line-height: 1.2; letter-spacing: -0.01em; }
+  
+  .b-divider { width: 1.5px; height: 32px; background: #eaeaea; }
+
+  /* --- CTA Animado --- */
+  .cta {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 35%, #fff 50%);
+    padding: 30px 18px 16px; 
+    z-index: 10;
+    pointer-events: none; 
+    opacity: 0; 
+  }
+  .cta .atc-btn, .cta .guarantee { pointer-events: auto; }
+
+  .atc-btn {
+    width: 100%; background: #111; color: #fff; border: none; border-radius: 40px;
+    padding: 13px; font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; margin-bottom: 6px;
+  }
+  .guarantee {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-size: 11.5px; color: #111;
+  }
+  .g-dot {
+    width: 18px; height: 18px; background: #111; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .g-dot svg { width: 10px; height: 10px; stroke: #fff; fill: none; stroke-width: 2.5; }
+
+  @keyframes slideInTop {
+    0% { opacity: 0; transform: translateX(-30px) translateY(10px); }
+    100% { opacity: 1; transform: translateX(0) translateY(0); }
+  }
+  @keyframes slideOutTop {
+    0% { opacity: 1; transform: translateX(0) translateY(0); }
+    100% { opacity: 0; transform: translateX(-30px) translateY(10px); }
+  }
+  @keyframes slideInBottom {
+    0% { opacity: 0; transform: translateY(15px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideOutBottom {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(15px); }
+  }
+
+  .cta.top-in { animation: slideInTop 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+  .cta.top-out { animation: slideOutTop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+  .cta.bottom-in { animation: slideInBottom 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+  .cta.bottom-out { animation: slideOutBottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+  @media (max-width: 420px) {
+    body { background: #fff; align-items: flex-start; }
+    .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="banner">
+    <span class="banner-arrow">←</span>
+    <div class="banner-content">
+      <svg viewBox="0 0 24 16"><rect x="1" y="1" width="22" height="12" rx="2"/><path d="M1 5h7M1 9h5"/><circle cx="19" cy="9" r="2"/></svg>
+      <span>Descarga Inmediata del Bot</span>
+    </div>
+    <span class="banner-arrow" style="text-align:right">→</span>
+  </div>
+
+  <nav class="navbar">
+    <div class="ham"><span></span><span></span><span></span></div>
+    <div class="logo">VIP SCALPER<sup>®</sup></div>
+    <div class="nav-right">
+      <div class="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <div class="nav-ico"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></div>
+    </div>
+  </nav>
+
+  <div class="scroll-area" id="scrollArea">
+    <div class="gallery">
+      <div class="main-img" id="mainImgContainer">
+        <div class="bestseller">🔥 Bot Más Vendido</div>
+        <!-- 3 imágenes del carrusel -->
+        <img class="product-img active" src="https://i.ibb.co/PZttFfmy/1000451361.png" alt="VIP Scalper 1">
+        <img class="product-img" src="https://i.ibb.co/jvpsR2JR/1000451362.png" alt="VIP Scalper 2">
+        <img class="product-img" src="https://i.ibb.co/BKVBPSTg/1000451363.png" alt="VIP Scalper 3">
+      </div>
+      <div class="badges">
+        <div class="badge">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18.7 8l-5.3 5.3-3.1-3.1L3 17.5"/></svg>
+          <span>Grid<br>Automático</span>
+        </div>
+        <div class="badge">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+          <span>Timeframe<br>M1</span>
+        </div>
+        <div class="badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+          <span>Listo<br>para MT5</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 3 Dots dinámicos -->
+    <div class="dots" id="dotsContainer">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="info">
+      <div class="rating-row">
+        <div class="stars">
+          <svg class="star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          <svg class="star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          <svg class="star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          <svg class="star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          <svg class="star" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+        </div>
+        <span class="rev">Compatible con MetaTrader 5</span>
+      </div>
+
+      <h1 class="ptitle">VIP Scalper — Bot de Grid Automatizado</h1>
+
+      <div class="chips">
+        <div class="chip">
+          <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M12 7V5a2 2 0 00-4 0v2M12 7v10M12 17v2a2 2 0 004 0v-2"/></svg>
+          Archivo MQ5
+        </div>
+        <div class="chip"><span class="kcal-box">MT5</span> Estrategia de Grid</div>
+      </div>
+
+      <div class="benefits">
+        <div class="ben"><div class="chk"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Corre una estrategia de grid de precisión en el timeframe M1.</div>
+        <div class="ben"><div class="chk"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Abre y cierra órdenes automáticamente al alcanzar el objetivo de ganancia.</div>
+        <div class="ben"><div class="chk"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Controlás GridSpacing, LotSize, GridProfitTarget y más.</div>
+      </div>
+    </div>
+
+    <div class="desc-box">
+      <p><b>📈 VIP Scalper — Bot de Grid Automatizado</b></p>
+      <p>Bot de trading totalmente automatizado, diseñado para MetaTrader 5. Corre una estrategia de grid de precisión en el timeframe M1, en cualquier activo con spread bajo o cero, colocando órdenes de compra y venta en intervalos de precio definidos y cerrando todas las posiciones al alcanzar el objetivo de ganancia. No necesita intervención manual — solo configurás, activás, y lo dejás operar.</p>
+
+      <ul>
+        <li>📦 Incluye: archivo VIPScalper.mq5 + manual de instalación paso a paso.</li>
+        <li>⚙️ Parámetros que controlás: GridSpacing, GridLevels, LotSize, GridProfitTarget, GridLossLimit, MaxDrawdown.</li>
+      </ul>
+
+      <ul>
+        <li>💻 Requiere: MetaTrader 5 (MT5)</li>
+        <li>📊 Cuenta con spread bajo o cero en el símbolo elegido</li>
+        <li>🌐 Conexión a internet estable</li>
+        <li>🔓 Trading algorítmico habilitado en MT5</li>
+      </ul>
+
+      <p>Incluye: archivo .mq5 listo para usar + manual de instalación.</p>
+
+      <div class="bottom-badges-wrap">
+        <div class="b-badge">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18.7 8l-5.3 5.3-3.1-3.1L3 17.5"/></svg>
+          <span>Grid<br>Automático</span>
+        </div>
+        <div class="b-divider"></div>
+        <div class="b-badge">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+          <span>Timeframe<br>M1</span>
+        </div>
+        <div class="b-divider"></div>
+        <div class="b-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+          <span>Listo<br>para MT5</span>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        ⚠️ Producto digital. El trading conlleva riesgo — resultados pasados no garantizan rendimientos futuros.
+      </div>
+    </div>
+  </div>
+
+  <div class="cta top-in" id="ctaBlock">
+    <button class="atc-btn" id="atc-btn">DESCARGAR BOT AHORA</button>
+    <div class="guarantee">
+      <div class="g-dot"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>
+      Acceso inmediato al archivo .mq5
+    </div>
+  </div>
+</div>
+
+<script>
+  // Script para el Carrusel Automático de Imágenes y Dots
+  const images = document.querySelectorAll('.product-img');
+  const dots = document.querySelectorAll('.dot');
+  let currentIndex = 0;
+
+  function changeImage() {
+    images[currentIndex].classList.remove('active');
+    dots[currentIndex].classList.remove('active');
+    
+    currentIndex = (currentIndex + 1) % images.length;
+    
+    images[currentIndex].classList.add('active');
+    dots[currentIndex].classList.add('active');
+  }
+
+  setInterval(changeImage, 3000); // Cambia cada 3 segundos automáticamente
+
+  // Script para las animaciones del CTA al hacer scroll
+  const scrollArea = document.getElementById('scrollArea');
+  const cta = document.getElementById('ctaBlock');
+  let isScrolling = false;
+  let currentState = 'top'; 
+
+  scrollArea.addEventListener('scroll', () => {
+    if (!isScrolling) {
+      window.requestAnimationFrame(() => {
+        const st = scrollArea.scrollTop;
+        const maxScroll = scrollArea.scrollHeight - scrollArea.clientHeight;
+        
+        if (st <= 20 && currentState !== 'top') {
+          cta.className = 'cta top-in';
+          currentState = 'top';
+        } else if (st >= maxScroll - 20 && currentState !== 'bottom') {
+          cta.className = 'cta bottom-in';
+          currentState = 'bottom';
+        } else if (st > 20 && st < maxScroll - 20 && currentState !== 'middle') {
+          if (currentState === 'top') {
+            cta.className = 'cta top-out';
+          } else if (currentState === 'bottom') {
+            cta.className = 'cta bottom-out';
+          }
+          currentState = 'middle';
+        }
+        
+        isScrolling = false;
+      });
+      isScrolling = true;
+    }
+  });
+</script>
+
+<!-- Checkout USDT: al tocar "DESCARGAR BOT AHORA" se abre el modal de pago -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/buy-modal.js"></script>
+</body>
+</html>
