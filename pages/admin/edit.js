@@ -4,6 +4,7 @@ import { DEFAULT_CONTENT } from '../../lib/product-content';
 
 export default function EditProduct() {
   const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [content, setContent] = useState(null);
   const [status, setStatus] = useState('');
 
@@ -47,12 +48,27 @@ export default function EditProduct() {
     <div style={{ minHeight: '100dvh', background: '#f4f4f4', fontFamily: "'Inter', sans-serif" }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#111', color: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         <strong style={{ fontSize: 14 }}>Editor de la landing</strong>
-        <input
-          value={token}
-          onChange={(e) => saveTokenInput(e.target.value)}
-          placeholder="ADMIN TOKEN"
-          style={{ padding: '6px 10px', borderRadius: 6, border: 'none', fontSize: 12, width: 220 }}
-        />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <input
+            value={token}
+            onChange={(e) => saveTokenInput(e.target.value)}
+            placeholder="ADMIN TOKEN"
+            type={showToken ? 'text' : 'password'}
+            style={{ padding: '6px 34px 6px 10px', borderRadius: 6, border: 'none', fontSize: 12, width: 220 }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowToken((s) => !s)}
+            title={showToken ? 'Ocultar' : 'Mostrar'}
+            style={{ position: 'absolute', right: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
+          >
+            {showToken ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#666" fill="none" strokeWidth="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#666" fill="none" strokeWidth="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /><line x1="3" y1="3" x2="21" y2="21" /></svg>
+            )}
+          </button>
+        </div>
         <button
           onClick={guardar}
           disabled={!content}
@@ -69,7 +85,7 @@ export default function EditProduct() {
         las estrellas para poner la cantidad, el cartel amarillo para cambiarle el color, y el botón para editar su texto y el link de descarga.
       </p>
 
-      <div style={{ padding: '20px 0 60px' }}>
+      <div style={{ padding: '20px 0 60px', display: 'flex', justifyContent: 'center' }}>
         {content && <ProductLanding content={content} editable onChange={setContent} />}
       </div>
     </div>
