@@ -29,8 +29,8 @@ export default function ProductPage({ product }) {
         <title>{product.title}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </Head>
-      <div style={{ minHeight: '100dvh', background: '#fff' }}>
-        <ProductLanding content={product} editable={false} mode="live" onChange={() => {}} />
+      <div style={{ minHeight: '100dvh', background: '#fff', maxWidth: 430, margin: '0 auto' }}>
+        <ProductLanding content={product} editable={false} mode="live" card={false} onChange={() => {}} />
       </div>
     </>
   );
