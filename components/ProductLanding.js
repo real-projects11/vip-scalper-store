@@ -117,13 +117,12 @@ const BASE_CSS = `
   .plp .edit-bestseller-toggle { position: absolute; top: 10px; right: 10px; z-index: 3; border: none; color: #fff; font-size: 9px; font-weight: 700; border-radius: 20px; padding: 4px 8px; cursor: pointer; }
 
   /* --- Marco de iPhone alrededor del mockup --- */
-  .plp .iphone-frame { width: 409px; padding: 14px 12px; background: linear-gradient(160deg, #3a3a3c, #1c1c1e); border-radius: 62px; box-shadow: 0 40px 90px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(255,255,255,0.08); position: relative; margin: 0 auto; }
-  .plp .iphone-frame .notch { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 130px; height: 26px; background: #1c1c1e; border-radius: 0 0 16px 16px; z-index: 30; }
+  .plp .iphone-frame { width: 391px; padding: 6px; background: linear-gradient(160deg, #3a3a3c, #1c1c1e); border-radius: 54px; box-shadow: 0 40px 90px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(255,255,255,0.08); position: relative; margin: 0 auto; }
   .plp .iphone-frame .side-btn { position: absolute; background: #2c2c2e; border-radius: 3px; }
   .plp .iphone-frame .side-btn.power { right: -3px; top: 150px; width: 3px; height: 70px; }
   .plp .iphone-frame .side-btn.vol-up { left: -3px; top: 110px; width: 3px; height: 34px; }
   .plp .iphone-frame .side-btn.vol-down { left: -3px; top: 150px; width: 3px; height: 34px; }
-  .plp .iphone-frame .phone { border-radius: 46px; }
+  .plp .iphone-frame .phone { border-radius: 48px; }
 `;
 
 function cls(...xs) { return xs.filter(Boolean).join(' '); }
@@ -461,7 +460,6 @@ export default function ProductLanding({ content, editable = false, onChange, mo
       <style>{BASE_CSS}</style>
       {frame ? (
         <div className="iphone-frame">
-          <div className="notch" />
           <div className="side-btn power" />
           <div className="side-btn vol-up" />
           <div className="side-btn vol-down" />
