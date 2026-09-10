@@ -112,7 +112,7 @@ export default function EditProduct() {
       </p>
 
       <div style={{ padding: '20px 0 60px', display: 'flex', justifyContent: 'center' }}>
-        {content && <ProductLanding content={content} editable onChange={setContent} />}
+        {content && <ProductLanding content={content} editable onChange={setContent} frame />}
       </div>
     </div>
   );
