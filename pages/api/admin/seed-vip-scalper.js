@@ -1,17 +1,9 @@
-// Ruta de UN SOLO USO para precargar el producto "VIP Scalper" con el
-// contenido REAL que ya tenías armado en el sistema viejo de un solo
-// producto (lib/product-content.js) — ahora convertido en un producto más
-// dentro del sistema multi-producto nuevo.
-//
-// Cómo usarla: andá a /admin-seed en el navegador, pegá tu ADMIN_TOKEN y
-// tocá el botón. No hace falta terminal.
-//
-// Es seguro tocarla más de una vez: si el producto ya existe (por título),
-// no crea un duplicado.
+import { redis } from '../../../lib/redis';
+import { getProduct } from '../../../lib/products';
 
-import { createProduct, updateProduct, listProducts } from '../../../lib/products';
+const SLUG = 'vip-scalper';
 
-const VIP_SCALPER_CONTENT = {
+const CONTENT = {
   brandName: 'VIP SCALPER®',
   bannerText: 'Descarga Inmediata del Bot',
   bestseller: true,
@@ -55,27 +47,31 @@ const VIP_SCALPER_CONTENT = {
   alertColor: '#735a00',
   buttonText: 'DESCARGAR BOT AHORA',
   guaranteeText: 'Acceso inmediato al archivo .mq5',
-  fileUrl: '', // ← pegá acá el link de descarga real del .mq5 desde /admin/edit
+  fileUrl: '',
 };
 
 export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
   const token = req.headers['x-admin-token'];
   if (!token || token !== process.env.ADMIN_TOKEN) {
     return res.status(401).json({ error: 'No autorizado' });
   }
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido — usá POST' });
+
+  const existing = await getProduct(SLUG);
+  if (existing) {
+    return res.status(200).json({ product: existing, alreadyExisted: true });
   }
 
-  try {
-    const existing = (await listProducts()).find((p) => p.title === VIP_SCALPER_CONTENT.title);
-    if (existing) {
-      return res.status(200).json({ ok: true, alreadyExisted: true, product: existing });
-    }
-    const draft = await createProduct(VIP_SCALPER_CONTENT.title);
-    const product = await updateProduct(draft.slug, { ...VIP_SCALPER_CONTENT, active: true, price: 25 });
-    res.status(200).json({ ok: true, product });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const now = Date.now();
+  await redis.hset(`product:${SLUG}`, {
+    active: '1',
+    price: '25',
+    sold: '0',
+    createdAt: String(now),
+    content: JSON.stringify(CONTENT),
+  });
+  await redis.zadd('idx:products', { score: now, member: SLUG });
+
+  const product = await getProduct(SLUG);
+  res.status(200).json({ product, alreadyExisted: false });
 }
