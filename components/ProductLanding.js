@@ -29,7 +29,7 @@ const STAR_PATH = 'M12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,2
 // son EXACTAMENTE las mismas que en el HTML original. ---
 const BASE_CSS = `
   .plp, .plp *, .plp *::before, .plp *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-  .plp .phone { width: 100%; max-width: 560px; margin: 0 auto; background: #fff; position: relative; }
+  .plp .phone { width: 375px; height: 780px; background: #fff; border-radius: 50px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; position: relative; }
   .plp .banner { background: #f7f7f7; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; padding: 5px 18px; flex-shrink: 0; gap: 0; }
   .plp .banner-arrow { font-size: 14px; color: #bbb; width: 20px; }
   .plp .banner-content { display: flex; align-items: center; gap: 7px; flex: 1; justify-content: center; }
@@ -41,7 +41,8 @@ const BASE_CSS = `
   .plp .logo { font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: #111; }
   .plp .nav-right { display: flex; gap: 12px; }
   .plp .nav-ico svg { width: 22px; height: 22px; stroke: #111; fill: none; stroke-width: 1.6; }
-  .plp .scroll-area { background: #fff; padding-bottom: 90px; }
+  .plp .scroll-area { flex: 1; overflow-y: auto; background: #fff; padding-bottom: 90px; scrollbar-width: none; }
+  .plp .scroll-area::-webkit-scrollbar { display: none; }
   .plp .gallery { display: flex; gap: 9px; padding: 12px 14px 0; align-items: flex-start; }
   .plp .main-img { flex: 1; background: #000; border-radius: 14px; border: 1.5px solid #ddd; position: relative; height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .plp .bestseller { position: absolute; top: 10px; left: 10px; background: #fff; border-radius: 20px; padding: 5px 11px 5px 8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 2; }
@@ -80,7 +81,7 @@ const BASE_CSS = `
   .plp .b-badge svg { width: 24px; height: 24px; stroke: #111; fill: none; stroke-width: 1.5; }
   .plp .b-badge span { font-size: 9px; font-weight: 600; color: #111; text-align: center; line-height: 1.2; letter-spacing: -0.01em; }
   .plp .b-divider { width: 1.5px; height: 32px; background: #eaeaea; }
-  .plp .cta { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 560px; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 35%, #fff 50%); padding: 30px 18px 16px; z-index: 10; }
+  .plp .cta { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 35%, #fff 50%); padding: 30px 18px 16px; z-index: 10; }
   .plp .atc-btn { width: 100%; background: #111; color: #fff; border: none; border-radius: 40px; padding: 13px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; margin-bottom: 6px; }
   .plp .guarantee { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 11.5px; color: #111; }
   .plp .g-dot { width: 18px; height: 18px; background: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -114,6 +115,15 @@ const BASE_CSS = `
   .plp .edit-imgchip { font-size: 9px; background: rgba(255,255,255,.9); border-radius: 10px; padding: 2px 6px; }
   .plp .edit-imgchip button { border: none; background: none; cursor: pointer; margin-left: 4px; font-weight: 700; }
   .plp .edit-bestseller-toggle { position: absolute; top: 10px; right: 10px; z-index: 3; border: none; color: #fff; font-size: 9px; font-weight: 700; border-radius: 20px; padding: 4px 8px; cursor: pointer; }
+
+  /* --- Marco de iPhone alrededor del mockup --- */
+  .plp .iphone-frame { width: 409px; padding: 14px 12px; background: linear-gradient(160deg, #3a3a3c, #1c1c1e); border-radius: 62px; box-shadow: 0 40px 90px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(255,255,255,0.08); position: relative; margin: 0 auto; }
+  .plp .iphone-frame .notch { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 130px; height: 26px; background: #1c1c1e; border-radius: 0 0 16px 16px; z-index: 30; }
+  .plp .iphone-frame .side-btn { position: absolute; background: #2c2c2e; border-radius: 3px; }
+  .plp .iphone-frame .side-btn.power { right: -3px; top: 150px; width: 3px; height: 70px; }
+  .plp .iphone-frame .side-btn.vol-up { left: -3px; top: 110px; width: 3px; height: 34px; }
+  .plp .iphone-frame .side-btn.vol-down { left: -3px; top: 150px; width: 3px; height: 34px; }
+  .plp .iphone-frame .phone { border-radius: 46px; }
 `;
 
 function cls(...xs) { return xs.filter(Boolean).join(' '); }
@@ -149,10 +159,7 @@ function EditableList({ items, onChange, editable, renderItem, addLabel, newItem
           <button onClick={() => onChange(items.filter((_, idx) => idx !== i))} className="edit-remove" title="Quitar">×</button>
         </div>
       ))}
-      <button
-        onClick={() => onChange([...items, typeof newItem === 'function' ? newItem() : newItem])}
-        className="edit-add"
-      >
+      <button onClick={() => onChange([...items, newItem])} className="edit-add">
         + {addLabel}
       </button>
     </>
@@ -171,7 +178,7 @@ function IconPicker({ current, onPick, onClose }) {
   );
 }
 
-export default function ProductLanding({ content, editable = false, onChange, mode = 'preview' }) {
+export default function ProductLanding({ content, editable = false, onChange, mode = 'preview', frame = true }) {
   const [pickerFor, setPickerFor] = useState(null);
   const [alertPickerOpen, setAlertPickerOpen] = useState(false);
   const [btnPopoverOpen, setBtnPopoverOpen] = useState(false);
@@ -185,17 +192,16 @@ export default function ProductLanding({ content, editable = false, onChange, mo
   const galleryImgs = images.length ? images : [null];
 
   // Reproduce el show/hide del CTA al hacer scroll — solo en modo lectura
-  // (en edición lo dejamos siempre visible para poder tocarlo). Ahora la
-  // página scrollea entera (ya no hay un div interno con su propio scroll),
-  // así que escuchamos el scroll de la ventana.
+  // (en edición lo dejamos siempre visible para poder tocarlo).
   useEffect(() => {
     if (editable) return;
+    const area = scrollRef.current;
     const cta = ctaRef.current;
-    if (!cta) return;
+    if (!area || !cta) return;
     let state = 'top';
     function onScroll() {
-      const st = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const st = area.scrollTop;
+      const max = area.scrollHeight - area.clientHeight;
       if (st <= 20 && state !== 'top') { cta.className = 'cta top-in'; state = 'top'; }
       else if (st >= max - 20 && state !== 'bottom') { cta.className = 'cta bottom-in'; state = 'bottom'; }
       else if (st > 20 && st < max - 20 && state !== 'middle') {
@@ -203,8 +209,8 @@ export default function ProductLanding({ content, editable = false, onChange, mo
         state = 'middle';
       }
     }
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    area.addEventListener('scroll', onScroll);
+    return () => area.removeEventListener('scroll', onScroll);
   }, [editable]);
 
   // Carrusel automático — solo en modo lectura.
@@ -393,60 +399,77 @@ export default function ProductLanding({ content, editable = false, onChange, mo
           )}
         </div>
       </div>
+    </div>
+  );
 
-      <div className="cta top-in" ref={ctaRef}>
-        <div style={{ position: 'relative' }}>
-          <button
-            id={editable ? undefined : 'atc-btn'}
-            className="atc-btn"
-            disabled={!editable && mode === 'preview'}
-            onClick={() => editable && setBtnPopoverOpen((o) => !o)}
-          >
-            {c.buttonText}
-          </button>
-          {editable && btnPopoverOpen && (
-            <div className="edit-btnpop">
-              <label>Texto del botón</label>
-              <input value={c.buttonText} onChange={(e) => patch({ buttonText: e.target.value })} />
-              <label>Link de descarga (pisa el FILE_URL de entorno)</label>
-              <input placeholder="https://drive.google.com/..." value={c.fileUrl} onChange={(e) => patch({ fileUrl: e.target.value })} />
-              <button className="close" onClick={() => setBtnPopoverOpen(false)}>Listo</button>
-            </div>
-          )}
-        </div>
-        <div className="guarantee">
-          <div className="g-dot"><svg viewBox="0 0 12 12" style={{ width: 10, height: 10, stroke: '#fff', fill: 'none', strokeWidth: 2.5 }}><polyline points="2,6 5,9 10,3" /></svg></div>
-          <Editable editable={editable} value={c.guaranteeText} onSave={(v) => patch({ guaranteeText: v })} />
-        </div>
+  const ctaSection = (
+    <div className="cta top-in" ref={ctaRef}>
+      <div style={{ position: 'relative' }}>
+        <button
+          id={editable ? undefined : 'atc-btn'}
+          className="atc-btn"
+          disabled={!editable && mode === 'preview'}
+          onClick={() => editable && setBtnPopoverOpen((o) => !o)}
+        >
+          {c.buttonText}
+        </button>
+        {editable && btnPopoverOpen && (
+          <div className="edit-btnpop">
+            <label>Texto del botón</label>
+            <input value={c.buttonText} onChange={(e) => patch({ buttonText: e.target.value })} />
+            <label>Link de descarga (pisa el FILE_URL de entorno)</label>
+            <input placeholder="https://drive.google.com/..." value={c.fileUrl} onChange={(e) => patch({ fileUrl: e.target.value })} />
+            <button className="close" onClick={() => setBtnPopoverOpen(false)}>Listo</button>
+          </div>
+        )}
       </div>
+      <div className="guarantee">
+        <div className="g-dot"><svg viewBox="0 0 12 12" style={{ width: 10, height: 10, stroke: '#fff', fill: 'none', strokeWidth: 2.5 }}><polyline points="2,6 5,9 10,3" /></svg></div>
+        <Editable editable={editable} value={c.guaranteeText} onSave={(v) => patch({ guaranteeText: v })} />
+      </div>
+    </div>
+  );
+
+  const phoneEl = (
+    <div className="phone">
+      <div className="banner">
+        <span className="banner-arrow">←</span>
+        <div className="banner-content">
+          <svg viewBox="0 0 24 16"><rect x="1" y="1" width="22" height="12" rx="2" /><path d="M1 5h7M1 9h5" /><circle cx="19" cy="9" r="2" /></svg>
+          <Editable editable={editable} value={c.bannerText} onSave={(v) => patch({ bannerText: v })} />
+        </div>
+        <span className="banner-arrow" style={{ textAlign: 'right' }}>→</span>
+      </div>
+      <nav className="navbar">
+        <div className="ham"><span /><span /><span /></div>
+        <Editable editable={editable} value={c.brandName} onSave={(v) => patch({ brandName: v })} className="logo" />
+        <div className="nav-right">
+          <div className="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg></div>
+          <div className="nav-ico"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></div>
+        </div>
+      </nav>
+      <div className="scroll-area" ref={scrollRef}>
+        {gallerySection}
+        {infoSection}
+      </div>
+      {ctaSection}
     </div>
   );
 
   return (
     <div className="plp">
       <style>{BASE_CSS}</style>
-      <div className="phone">
-        <div className="banner">
-          <span className="banner-arrow">←</span>
-          <div className="banner-content">
-            <svg viewBox="0 0 24 16"><rect x="1" y="1" width="22" height="12" rx="2" /><path d="M1 5h7M1 9h5" /><circle cx="19" cy="9" r="2" /></svg>
-            <Editable editable={editable} value={c.bannerText} onSave={(v) => patch({ bannerText: v })} />
-          </div>
-          <span className="banner-arrow" style={{ textAlign: 'right' }}>→</span>
+      {frame ? (
+        <div className="iphone-frame">
+          <div className="notch" />
+          <div className="side-btn power" />
+          <div className="side-btn vol-up" />
+          <div className="side-btn vol-down" />
+          {phoneEl}
         </div>
-        <nav className="navbar">
-          <div className="ham"><span /><span /><span /></div>
-          <Editable editable={editable} value={c.brandName} onSave={(v) => patch({ brandName: v })} className="logo" />
-          <div className="nav-right">
-            <div className="nav-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg></div>
-            <div className="nav-ico"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" /></svg></div>
-          </div>
-        </nav>
-        <div className="scroll-area" ref={scrollRef}>
-          {gallerySection}
-          {infoSection}
-        </div>
-      </div>
+      ) : (
+        phoneEl
+      )}
     </div>
   );
 }
