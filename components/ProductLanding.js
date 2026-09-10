@@ -177,7 +177,7 @@ function IconPicker({ current, onPick, onClose }) {
   );
 }
 
-export default function ProductLanding({ content, editable = false, onChange, mode = 'preview', frame = true }) {
+export default function ProductLanding({ content, editable = false, onChange, mode = 'preview', frame = false }) {
   const [pickerFor, setPickerFor] = useState(null);
   const [alertPickerOpen, setAlertPickerOpen] = useState(false);
   const [btnPopoverOpen, setBtnPopoverOpen] = useState(false);
