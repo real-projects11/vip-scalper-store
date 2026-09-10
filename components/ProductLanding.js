@@ -123,6 +123,11 @@ const BASE_CSS = `
   .plp .iphone-frame .side-btn.vol-up { left: -3px; top: 110px; width: 3px; height: 34px; }
   .plp .iphone-frame .side-btn.vol-down { left: -3px; top: 150px; width: 3px; height: 34px; }
   .plp .iphone-frame .phone { border-radius: 48px; }
+
+  /* --- Variante "libre": la landing real, sin la tarjeta de teléfono ni bordes redondeados --- */
+  .plp.flat .phone { width: 100%; max-width: 430px; height: auto; border-radius: 0; box-shadow: none; margin: 0 auto; }
+  .plp.flat .scroll-area { overflow: visible; padding-bottom: 110px; }
+  .plp.flat .cta { position: sticky; }
 `;
 
 function cls(...xs) { return xs.filter(Boolean).join(' '); }
@@ -177,7 +182,7 @@ function IconPicker({ current, onPick, onClose }) {
   );
 }
 
-export default function ProductLanding({ content, editable = false, onChange, mode = 'preview', frame = false }) {
+export default function ProductLanding({ content, editable = false, onChange, mode = 'preview', frame = false, card = true }) {
   const [pickerFor, setPickerFor] = useState(null);
   const [alertPickerOpen, setAlertPickerOpen] = useState(false);
   const [btnPopoverOpen, setBtnPopoverOpen] = useState(false);
@@ -193,7 +198,7 @@ export default function ProductLanding({ content, editable = false, onChange, mo
   // Reproduce el show/hide del CTA al hacer scroll — solo en modo lectura
   // (en edición lo dejamos siempre visible para poder tocarlo).
   useEffect(() => {
-    if (editable) return;
+    if (editable || !card) return;
     const area = scrollRef.current;
     const cta = ctaRef.current;
     if (!area || !cta) return;
@@ -456,7 +461,7 @@ export default function ProductLanding({ content, editable = false, onChange, mo
   );
 
   return (
-    <div className="plp">
+    <div className={cls('plp', !card && 'flat')}>
       <style>{BASE_CSS}</style>
       {frame ? (
         <div className="iphone-frame">
