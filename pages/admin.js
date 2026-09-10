@@ -110,6 +110,25 @@ export default function Admin() {
     setCreating(false);
   }
 
+  async function seedVipScalper() {
+    setCreating(true);
+    try {
+      const res = await fetch('/api/admin/seed-vip-scalper', {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+      });
+      const data = await res.json();
+      if (!res.ok) { setMsg({ ok: false, text: data.error }); }
+      else {
+        load();
+        setMsg({ ok: true, text: data.alreadyExisted ? 'El producto VIP Scalper ya existía.' : '✓ VIP Scalper precargado.' });
+      }
+    } catch {
+      setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
+    }
+    setCreating(false);
+  }
+
   function fmtDate(ts) {
     if (!ts) return '—';
     return new Date(ts).toLocaleString('es-AR');
@@ -140,7 +159,18 @@ export default function Admin() {
           </button>
         </div>
 
-        {products.length === 0 && <p style={{ fontSize: 12.5, color: '#999' }}>Todavía no creaste ningún producto.</p>}
+        {products.length === 0 && (
+          <>
+            <p style={{ fontSize: 12.5, color: '#999', marginBottom: 10 }}>Todavía no creaste ningún producto.</p>
+            <button
+              onClick={seedVipScalper}
+              disabled={creating}
+              style={{ padding: '8px 14px', borderRadius: 8, border: '1.5px dashed #999', background: 'none', color: '#666', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+            >
+              Precargar VIP Scalper (el que ya teníamos armado)
+            </button>
+          </>
+        )}
 
         {products.map((p) => (
           <div key={p.slug} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderTop: '1px solid #f2f2f2' }}>
