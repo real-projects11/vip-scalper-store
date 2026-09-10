@@ -127,7 +127,7 @@ const BASE_CSS = `
   /* --- Variante "libre": la landing real, sin la tarjeta de teléfono ni bordes redondeados --- */
   .plp.flat .phone { width: 100%; max-width: 430px; height: auto; border-radius: 0; box-shadow: none; margin: 0 auto; }
   .plp.flat .scroll-area { overflow: visible; padding-bottom: 110px; }
-  .plp.flat .cta { position: sticky; }
+  .plp.flat .cta { position: fixed; left: 0; right: 0; margin: 0 auto; max-width: 430px; }
 `;
 
 function cls(...xs) { return xs.filter(Boolean).join(' '); }
@@ -198,14 +198,19 @@ export default function ProductLanding({ content, editable = false, onChange, mo
   // Reproduce el show/hide del CTA al hacer scroll — solo en modo lectura
   // (en edición lo dejamos siempre visible para poder tocarlo).
   useEffect(() => {
-    if (editable || !card) return;
-    const area = scrollRef.current;
+    if (editable) return;
     const cta = ctaRef.current;
-    if (!area || !cta) return;
+    if (!cta) return;
+    const area = card ? scrollRef.current : null;
+    if (card && !area) return;
     let state = 'top';
+    function getScroll() {
+      if (card) return { st: area.scrollTop, max: area.scrollHeight - area.clientHeight };
+      const doc = document.documentElement;
+      return { st: window.scrollY, max: doc.scrollHeight - window.innerHeight };
+    }
     function onScroll() {
-      const st = area.scrollTop;
-      const max = area.scrollHeight - area.clientHeight;
+      const { st, max } = getScroll();
       if (st <= 20 && state !== 'top') { cta.className = 'cta top-in'; state = 'top'; }
       else if (st >= max - 20 && state !== 'bottom') { cta.className = 'cta bottom-in'; state = 'bottom'; }
       else if (st > 20 && st < max - 20 && state !== 'middle') {
@@ -213,9 +218,10 @@ export default function ProductLanding({ content, editable = false, onChange, mo
         state = 'middle';
       }
     }
-    area.addEventListener('scroll', onScroll);
-    return () => area.removeEventListener('scroll', onScroll);
-  }, [editable]);
+    const target = card ? area : window;
+    target.addEventListener('scroll', onScroll);
+    return () => target.removeEventListener('scroll', onScroll);
+  }, [editable, card]);
 
   // Carrusel automático — solo en modo lectura.
   useEffect(() => {
